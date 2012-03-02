@@ -17,7 +17,7 @@ date_format: '%Y-%m-%d %H:%M:%S'
 download_images: False
 
 # Item types we don't want to import.
-item_type_filter: {attachment, nav_menu_item}
+item_type_filter: {nav_menu_item}
 
 # filter by any field type on the post.
 # By default, we're filtering based on field "status" set to "draft"

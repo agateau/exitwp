@@ -120,6 +120,9 @@ def parse_wp_xml(file):
                 'img_srcs': img_srcs
                 }
 
+            if export_item['type'] == 'attachment':
+                export_item['attachment_url'] = gi('wp:attachment_url')
+
             export_items.append(export_item)
 
         return export_items
@@ -233,8 +236,6 @@ def write_jekyll(data, target_format):
         if(skip_item):
             continue
 
-        sys.stdout.write(".")
-        sys.stdout.flush()
         out=None
         yaml_header = {
           'title' : i['title'],
@@ -243,8 +244,12 @@ def write_jekyll(data, target_format):
           'status' : i['status'],
           'wordpress_id' : i['wp_id'],
         }
+        print i['title']
+        sys.stdout.flush()
 
-        if i['type'] == 'post':
+        if i['type'] in item_type_filter:
+            pass
+        elif i['type'] == 'post':
             i['uid']=get_item_uid(i,date_prefix=True)
             fn=get_item_path(i, dir='_posts')
             out=open_file(fn)
@@ -254,8 +259,19 @@ def write_jekyll(data, target_format):
             fn=get_item_path(i)
             out=open_file(fn)
             yaml_header['layout']='page'
-        elif i['type'] in item_type_filter:
-            pass
+        elif i['type'] == 'attachment':
+            url=i['attachment_url']
+            path=urlparse(url)[2]
+            target_file=os.path.normpath(blog_dir+'/'+path)
+            if os.path.exists(target_file):
+                print "- Skipping %s, already downloaded" % url
+            else:
+                target_dir=os.path.dirname(target_file)
+                if not os.path.exists(target_dir):
+                    os.makedirs(target_dir)
+                print "- Downloading %s to %s" % (url, target_file)
+                urlretrieve(url, target_file)
+            continue
         else:
             print "Unknown item type :: " +  i['type']
 
